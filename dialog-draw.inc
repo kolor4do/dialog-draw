@@ -76,9 +76,19 @@ forward OnDialogDrawResponse(playerid, ddialogid, response, listitem);
 
 stock AddDialogDrawItem(playerid, const item[])
 {
-	format(dd_Text[playerid][dd_ShowItems[playerid]], DD_MAX_ITEM_LENGTH, item);
+	dd_Text[playerid][dd_ShowItems[playerid]][0] = EOS;
+
+	new len = strlen(item);
+
+	#if DD_CENTER_ITEMS
+		for(new i; i <= (50 - len) / 2; i++)
+			strcat(dd_Text[playerid][dd_ShowItems[playerid]], "_");
+	#endif
+	#undef DD_CENTER_ITEMS
+
+	strcat(dd_Text[playerid][dd_ShowItems[playerid]], item);
 	
-	if(strlen(item) >= DD_MAX_ITEM_LENGTH)
+	if(len >= DD_MAX_ITEM_LENGTH)
 	{	
 		dd_Text[playerid][dd_ShowItems[playerid]][DD_MAX_ITEM_LENGTH - 4] =
 		dd_Text[playerid][dd_ShowItems[playerid]][DD_MAX_ITEM_LENGTH - 3] =
@@ -271,15 +281,9 @@ public OnPlayerConnect(playerid)
 
 	for(new i = DD_MAX_ITEMS_PER_PAGE - 1; i >= 0; --i)
 	{
-		#if DD_CENTER_ITEMS
-			dd_Items[playerid][i] = CreatePlayerTextDraw(playerid, 320.0, 180.0 + (i * 20.0), "__");
-			PlayerTextDrawTextSize		(playerid, dd_Items[playerid][i], 15.0, 320.0);
-			PlayerTextDrawAlignment		(playerid, dd_Items[playerid][i], 2);
-		#else
-			dd_Items[playerid][i] = CreatePlayerTextDraw(playerid, 160.5, 180.0 + (i * 20.0), "__");
-			PlayerTextDrawTextSize		(playerid, dd_Items[playerid][i], 480.0, 15.0);
-			PlayerTextDrawAlignment		(playerid, dd_Items[playerid][i], 1);
-		#endif
+		dd_Items[playerid][i] = CreatePlayerTextDraw(playerid, 160.0, 180.0 + (i * 20.0), "__");
+		PlayerTextDrawAlignment			(playerid, dd_Items[playerid][i], 1);
+		PlayerTextDrawTextSize			(playerid, dd_Items[playerid][i], 480.0, 15.0);
 		PlayerTextDrawFont				(playerid, dd_Items[playerid][i], 1);
 		PlayerTextDrawLetterSize		(playerid, dd_Items[playerid][i], 0.400000, 1.600000);
 		PlayerTextDrawSetOutline		(playerid, dd_Items[playerid][i], 0);
@@ -305,8 +309,6 @@ public OnPlayerConnect(playerid)
 	PlayerTextDrawUseBox				(playerid, dd_PageSize[playerid], 0);
 	PlayerTextDrawSetProportional		(playerid, dd_PageSize[playerid], 1);
 	PlayerTextDrawSetSelectable			(playerid, dd_PageSize[playerid], 0);
-
-	#undef DD_CENTER_ITEMS
 	#undef DD_ITEM_BOX_COLOR
 	#if defined dd_OnPlayerConnect
 		return dd_OnPlayerConnect(playerid);
