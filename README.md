@@ -5,7 +5,7 @@ Dialogs using textdraws whose coordinates were extremely well calculated and cen
 ## Functions
 
 ```pawn
-AddDialogDrawItem(playerid, const item[]);
+AddDialogDrawItem(playerid, const item[], color = DD_TEXT_COLOR);
 ShowDialogDraw(playerid, ddialogid, title[]);
 SetDialogDrawPage(playerid, page);
 HideDialogDraw(playerid);
