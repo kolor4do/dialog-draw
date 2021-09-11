@@ -5,10 +5,10 @@ Dialogs using textdraws whose coordinates were extremely well calculated and cen
 ## Functions
 
 ```pawn
-AddDialogDrawItem(playerid, const item[], color = DD_TEXT_COLOR);
+AddDialogDrawItem(playerid, const item[], color = -1);
 ShowDialogDraw(playerid, ddialogid, title[]);
 SetDialogDrawPage(playerid, page);
-HideDialogDraw(playerid);
+HideDialogDraw(playerid, cancelselect = true);
 ```
 
 ## Callback
@@ -68,9 +68,6 @@ public OnDialogDrawResponse(playerid, ddialogid, response, listitem)
                 case 6: GivePlayerWeapon(playerid, WEAPON_SNIPER, 99999);
             }
         }
-        
-        //The dialog only closes if you use this function.
-        HideDialogDraw(playerid);
     }
 }
 ```
