@@ -7,13 +7,13 @@
 	Functions:
 
 		AddDialogDrawItem(playerid, const item[], color = -1);
-		ShowDialogDraw(playerid, ddialogid, title[]);
+		ShowDialogDraw(playerid, dialogid, title[]);
 		SetDialogDrawPage(playerid, page);
 		HideDialogDraw(playerid, cancelselect = true);
 
   	Callback:
 
-		OnDialogDrawResponse(playerid, ddialogid, response, listitem)
+		OnDialogDrawResponse(playerid, dialogid, response, listitem)
 */
 
 #include <a_samp>
@@ -69,7 +69,7 @@ PlayerText:	dd_Title		[MAX_PLAYERS] = {PlayerText:INVALID_PLAYER_TEXT_DRAW, ...}
 PlayerText:	dd_Items		[MAX_PLAYERS][DD_MAX_ITEMS_PER_PAGE],
 PlayerText:	dd_PageSize		[MAX_PLAYERS] = {PlayerText:INVALID_PLAYER_TEXT_DRAW, ...};
 
-forward OnDialogDrawResponse(playerid, ddialogid, response, listitem);
+forward OnDialogDrawResponse(playerid, dialogid, response, listitem);
 
 stock AddDialogDrawItem(playerid, const item[], color = -1)
 {
@@ -97,7 +97,7 @@ stock AddDialogDrawItem(playerid, const item[], color = -1)
 	return itemid;
 }
 
-stock ShowDialogDraw(playerid, ddialogid, title[])
+stock ShowDialogDraw(playerid, dialogid, title[])
 {
 	if(!ddialogid)
 	{
