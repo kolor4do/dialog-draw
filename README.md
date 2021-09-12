@@ -19,7 +19,6 @@ public OnDialogDrawResponse(playerid, ddialogid, response, listitem)
 ## Optional definitions
 
 ```pawn
-#define  DD_CENTER_ITEMS              true
 #define  DD_MAX_PAGES                 17
 #define  DD_MAX_ITEMS_PER_PAGE        6
 #define  DD_TEXT_COLOR                -1446714113
