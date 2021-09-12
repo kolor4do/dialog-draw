@@ -50,6 +50,10 @@
 	#define DD_SELECT_COLOR			0xFFFF00ff
 #endif
 
+#if !defined DD_USE_SOUND
+	#define DD_USE_SOUND			true
+#endif
+
 #define DD_MAX_ITEM_LENGTH			43
 
 static
@@ -139,7 +143,7 @@ stock SetDialogDrawPage(playerid, page)
 {
 	new max_page = floatround(dd_ShowItems[playerid] / DD_MAX_ITEMS_PER_PAGE, floatround_floor);
 
-	if(page > max_page)
+	if(page > max_page || page < 0)
 		page = 0;
 	else if(page < 0)
 		page = max_page;
@@ -169,6 +173,7 @@ stock SetDialogDrawPage(playerid, page)
 	PlayerTextDrawShow(playerid, dd_PageSize[playerid]);
 
 	dd_Page[playerid] = page;
+	
 	return true;
 }
 
@@ -189,6 +194,10 @@ stock HideDialogDraw(playerid, cancelselect = true)
 	dd_DialogID[playerid] =
 	dd_Page[playerid] = 0;
 
+	#if DD_USE_SOUND
+		PlayerPlaySound(playerid, 1085, 0.0, 0.0, 0.0);
+	#endif
+	
 	if(cancelselect) CancelSelectTextDraw(playerid);
 	return true;
 }
@@ -207,11 +216,17 @@ public OnPlayerClickTextDraw(playerid, Text:clickedid)
 		// Previous Page
 		else if(clickedid == dd_PrevPageButton)
 		{
+			#if DD_USE_SOUND
+				PlayerPlaySound(playerid, 1084, 0.0, 0.0, 0.0);
+			#endif
 			SetDialogDrawPage(playerid, dd_Page[playerid] - 1);
 		}
 		// Next page
 		else if(clickedid == dd_NextPageButton)
 		{
+			#if DD_USE_SOUND
+				PlayerPlaySound(playerid, 1083, 0.0, 0.0, 0.0);
+			#endif
 			SetDialogDrawPage(playerid, dd_Page[playerid] + 1);
 		}
 	}
