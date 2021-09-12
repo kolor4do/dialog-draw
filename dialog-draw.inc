@@ -6,10 +6,10 @@
 /*
 	Functions:
 
-		AddDialogDrawItem(playerid, const item[]);
+		AddDialogDrawItem(playerid, const item[], color = -1);
 		ShowDialogDraw(playerid, ddialogid, title[]);
 		SetDialogDrawPage(playerid, page);
-		HideDialogDraw(playerid);
+		HideDialogDraw(playerid, cancelselect = true);
 
   	Callback:
 
@@ -17,10 +17,6 @@
 */
 
 #include <a_samp>
-
-#if !defined DD_CENTER_ITEMS
-	#define DD_CENTER_ITEMS			true
-#endif
 
 #if !defined DD_MAX_PAGES
 	#define DD_MAX_PAGES			17
@@ -51,15 +47,16 @@
 #endif
 
 #if !defined DD_SELECT_COLOR
-	#define DD_SELECT_COLOR			0xFFFF00FF
+	#define DD_SELECT_COLOR			0xFFFF00ff
 #endif
 
 #define DD_MAX_ITEM_LENGTH			43
 
 static
 			dd_Text[MAX_PLAYERS][DD_MAX_PAGES * DD_MAX_ITEMS_PER_PAGE][DD_MAX_ITEM_LENGTH],
+			dd_TextColor[MAX_PLAYERS][DD_MAX_PAGES * DD_MAX_ITEMS_PER_PAGE],
 			#undef DD_MAX_PAGES
-			dd_ShowItems[MAX_PLAYERS],
+			dd_ShowItems[MAX_PLAYERS] = {-1, ...},
 			dd_Page[MAX_PLAYERS],
 			dd_DialogID[MAX_PLAYERS],
 
@@ -74,29 +71,30 @@ PlayerText:	dd_PageSize		[MAX_PLAYERS] = {PlayerText:INVALID_PLAYER_TEXT_DRAW, .
 
 forward OnDialogDrawResponse(playerid, ddialogid, response, listitem);
 
-stock AddDialogDrawItem(playerid, const item[])
+stock AddDialogDrawItem(playerid, const item[], color = -1)
 {
-	dd_Text[playerid][dd_ShowItems[playerid]][0] = EOS;
+	if(dd_DialogID[playerid])
+		dd_ShowItems[playerid] = -1;
 
-	new len = strlen(item);
+	new 
+		itemid = ++dd_ShowItems[playerid],
+		len = strlen(item);
 
-	#if DD_CENTER_ITEMS
-		for(new i; i <= (50 - len) / 2; i++)
-			strcat(dd_Text[playerid][dd_ShowItems[playerid]], "_");
-	#endif
-	#undef DD_CENTER_ITEMS
+	format(dd_Text[playerid][itemid], DD_MAX_ITEM_LENGTH, item);
 
-	strcat(dd_Text[playerid][dd_ShowItems[playerid]], item);
-	
 	if(len >= DD_MAX_ITEM_LENGTH)
 	{	
-		dd_Text[playerid][dd_ShowItems[playerid]][DD_MAX_ITEM_LENGTH - 4] =
-		dd_Text[playerid][dd_ShowItems[playerid]][DD_MAX_ITEM_LENGTH - 3] =
-		dd_Text[playerid][dd_ShowItems[playerid]][DD_MAX_ITEM_LENGTH - 2] = '.';
-		dd_Text[playerid][dd_ShowItems[playerid]][DD_MAX_ITEM_LENGTH - 1] = EOS;
+		dd_Text[playerid][itemid][DD_MAX_ITEM_LENGTH - 4] =
+		dd_Text[playerid][itemid][DD_MAX_ITEM_LENGTH - 3] =
+		dd_Text[playerid][itemid][DD_MAX_ITEM_LENGTH - 2] = '.';
+		dd_Text[playerid][itemid][DD_MAX_ITEM_LENGTH - 1] = EOS;
 	}
+	#undef DD_MAX_ITEM_LENGTH
 
-	return ++dd_ShowItems[playerid];
+	//set item color
+	dd_TextColor[playerid][itemid] = color;
+
+	return itemid;
 }
 
 stock ShowDialogDraw(playerid, ddialogid, title[])
@@ -128,9 +126,9 @@ stock ShowDialogDraw(playerid, ddialogid, title[])
 	PlayerTextDrawSetString(playerid, dd_Title[playerid], title);
 	PlayerTextDrawShow(playerid, dd_Title[playerid]);
 
+	// Set page
+	SetDialogDrawPage(playerid, (dd_DialogID[playerid] == ddialogid) ? dd_Page[playerid] : 0);
 	dd_DialogID[playerid] = ddialogid;
-
-	SetDialogDrawPage(playerid, dd_Page[playerid]);
 
 	// Select textdraw
 	return SelectTextDraw(playerid, DD_SELECT_COLOR);
@@ -139,27 +137,24 @@ stock ShowDialogDraw(playerid, ddialogid, title[])
 
 stock SetDialogDrawPage(playerid, page)
 {
-	new max_page = floatround(dd_ShowItems[playerid] / DD_MAX_ITEMS_PER_PAGE, floatround_tozero);
+	new max_page = floatround(dd_ShowItems[playerid] / DD_MAX_ITEMS_PER_PAGE, floatround_floor);
 
 	if(page > max_page)
-	{
 		page = 0;
-	}
 	else if(page < 0)
-	{
 		page = max_page;
-	}
 
 	// update page items
 	for(new i = DD_MAX_ITEMS_PER_PAGE - 1; i >= 0; --i)
 	{
-		if(i + (page * DD_MAX_ITEMS_PER_PAGE) >= dd_ShowItems[playerid])
+		if(i + (page * DD_MAX_ITEMS_PER_PAGE) > dd_ShowItems[playerid])
 		{
 			PlayerTextDrawSetSelectable(playerid, dd_Items[playerid][i], 0);
 			PlayerTextDrawSetString(playerid, dd_Items[playerid][i], "_");
 		}
 		else
 		{
+			PlayerTextDrawColor(playerid, dd_Items[playerid][i], dd_TextColor[playerid][i + (page * DD_MAX_ITEMS_PER_PAGE)]);
 			PlayerTextDrawSetSelectable(playerid, dd_Items[playerid][i], 1);
 			PlayerTextDrawSetString(playerid, dd_Items[playerid][i], dd_Text[playerid][i + (page * DD_MAX_ITEMS_PER_PAGE)]);
 		}
@@ -177,7 +172,7 @@ stock SetDialogDrawPage(playerid, page)
 	return true;
 }
 
-stock HideDialogDraw(playerid)
+stock HideDialogDraw(playerid, cancelselect = true)
 {
 	TextDrawHideForPlayer(playerid, dd_Box);
 	TextDrawHideForPlayer(playerid, dd_CloseButton);
@@ -187,14 +182,14 @@ stock HideDialogDraw(playerid)
 	PlayerTextDrawHide(playerid, dd_Title[playerid]);
 
 	for(new i = DD_MAX_ITEMS_PER_PAGE - 1; i >= 0; --i)
-		PlayerTextDrawHide	(playerid, dd_Items[playerid][i]);
+		PlayerTextDrawHide(playerid, dd_Items[playerid][i]);
 
 	PlayerTextDrawHide(playerid, dd_PageSize[playerid]);
-	
-	CancelSelectTextDraw(playerid);
-	dd_ShowItems[playerid] =
+	dd_ShowItems[playerid] = -1;
 	dd_DialogID[playerid] =
 	dd_Page[playerid] = 0;
+
+	if(cancelselect) CancelSelectTextDraw(playerid);
 	return true;
 }
 public OnPlayerClickTextDraw(playerid, Text:clickedid)
@@ -204,7 +199,10 @@ public OnPlayerClickTextDraw(playerid, Text:clickedid)
 		// Close Dialog Draw pressing "X" or key ESC
 		if(clickedid == INVALID_TEXT_DRAW || clickedid == dd_CloseButton)
 		{
-			CallRemoteFunction("OnDialogDrawResponse", "iiii", playerid, dd_DialogID[playerid], 0, 0);	
+			new dialogid = dd_DialogID[playerid];
+			HideDialogDraw(playerid, false);
+			CallRemoteFunction("OnDialogDrawResponse", "iiii", playerid, dialogid, 0, 0);
+			if(!dd_DialogID[playerid]) CancelSelectTextDraw(playerid);
 		}
 		// Previous Page
 		else if(clickedid == dd_PrevPageButton)
@@ -236,12 +234,18 @@ public OnPlayerClickTextDraw(playerid, Text:clickedid)
 
 public OnPlayerClickPlayerTextDraw(playerid, PlayerText:playertextid)
 {
-	for(new i = DD_MAX_ITEMS_PER_PAGE - 1; i >= 0; --i)
+	if(dd_DialogID[playerid])
 	{
-		if(playertextid == dd_Items[playerid][i])
+		for(new i = DD_MAX_ITEMS_PER_PAGE - 1; i >= 0; --i)
 		{
-			CallRemoteFunction("OnDialogDrawResponse", "iiii", playerid, dd_DialogID[playerid], 1, i + (dd_Page[playerid] * DD_MAX_ITEMS_PER_PAGE));
-			break;
+			if(playertextid == dd_Items[playerid][i])
+			{
+				new dialogid = dd_DialogID[playerid], page = dd_Page[playerid];
+				HideDialogDraw(playerid, false);
+				CallRemoteFunction("OnDialogDrawResponse", "iiii", playerid, dialogid, 1, i + (page * DD_MAX_ITEMS_PER_PAGE));
+				if(!dd_DialogID[playerid]) CancelSelectTextDraw(playerid);
+				break;
+			}
 		}
 	}
 	#if defined dd_OnPlayerClickPlayerTextDraw
@@ -289,7 +293,7 @@ public OnPlayerConnect(playerid)
 		PlayerTextDrawSetOutline		(playerid, dd_Items[playerid][i], 0);
 		PlayerTextDrawSetShadow			(playerid, dd_Items[playerid][i], 1);
 		PlayerTextDrawColor				(playerid, dd_Items[playerid][i], -1);
-		PlayerTextDrawBackgroundColor	(playerid, dd_Items[playerid][i], 255);
+		PlayerTextDrawBackgroundColor	(playerid, dd_Items[playerid][i], 200);
 		PlayerTextDrawBoxColor			(playerid, dd_Items[playerid][i], DD_ITEM_BOX_COLOR);
 		PlayerTextDrawUseBox			(playerid, dd_Items[playerid][i], 1);
 		PlayerTextDrawSetProportional	(playerid, dd_Items[playerid][i], 1);
@@ -328,7 +332,7 @@ public OnPlayerConnect(playerid)
 
 public OnPlayerDisconnect(playerid, reason)
 {
-	dd_ShowItems[playerid] =
+	dd_ShowItems[playerid] = -1;
 	dd_Page[playerid] = 0;
 	PlayerTextDrawDestroy(playerid, dd_Title[playerid]);
 	for(new i = DD_MAX_ITEMS_PER_PAGE - 1; i >= 0; --i)
