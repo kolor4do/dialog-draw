@@ -6,7 +6,7 @@ Dialogs using textdraws whose coordinates were extremely well calculated and cen
 
 ```pawn
 AddDialogDrawItem(playerid, const item[], color = -1);
-ShowDialogDraw(playerid, ddialogid, title[]);
+ShowDialogDraw(playerid, dialogid, title[]);
 SetDialogDrawPage(playerid, page);
 HideDialogDraw(playerid, cancelselect = true);
 ```
@@ -50,9 +50,9 @@ public OnPlayerCommandText(playerid, cmdtext[])
     return 0;
 }
 
-public OnDialogDrawResponse(playerid, ddialogid, response, listitem)
+public OnDialogDrawResponse(playerid, dialogid, response, listitem)
 {
-    if(ddialogid == DIALOG_WEAPONS)
+    if(dialogid == DIALOG_WEAPONS)
     {
         if(response)
         {
