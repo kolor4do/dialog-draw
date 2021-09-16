@@ -65,9 +65,9 @@ Text:		dd_CloseButton 		= Text:INVALID_TEXT_DRAW,
 Text:		dd_PrevPageButton 	= Text:INVALID_TEXT_DRAW,
 Text:		dd_NextPageButton	= Text:INVALID_TEXT_DRAW,
 
-PlayerText:	dd_Title		[MAX_PLAYERS] = {PlayerText:INVALID_PLAYER_TEXT_DRAW, ...},
+PlayerText:	dd_Title		[MAX_PLAYERS] = {PlayerText:-1, ...},
 PlayerText:	dd_Items		[MAX_PLAYERS][DD_MAX_ITEMS_PER_PAGE],
-PlayerText:	dd_PageSize		[MAX_PLAYERS] = {PlayerText:INVALID_PLAYER_TEXT_DRAW, ...};
+PlayerText:	dd_PageSize		[MAX_PLAYERS] = {PlayerText:-1, ...};
 
 forward OnDialogDrawResponse(playerid, dialogid, response, listitem);
 
