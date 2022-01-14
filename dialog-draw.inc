@@ -97,7 +97,7 @@ stock AddDialogDrawItem(playerid, const item[], color = -1)
 	return itemid;
 }
 
-stock ShowDialogDraw(playerid, dialogid, title[])
+stock ShowDialogDraw(playerid, ddialogid, title[])
 {
 	if(!ddialogid)
 	{
